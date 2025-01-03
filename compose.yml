@@ -1,0 +1,12 @@
+services:
+  front:
+    build:
+      context: ./front
+    tty: true
+    volumes:
+      - ./front:/app
+    environment:
+      - WATCHPACK_POLLING=true
+    command: sh -c "npm run dev"
+    ports:
+      - "3000:3000"
