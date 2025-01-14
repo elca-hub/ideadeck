@@ -23,7 +23,7 @@ type (
 	}
 
 	CreateUserPresenter interface {
-		Output(model.User) CreateUserOutput
+		Output() CreateUserOutput
 	}
 
 	CreateUserOutput struct {
@@ -54,40 +54,40 @@ func (i createUserInterator) Execute(input CreateUserInput) (CreateUserOutput, e
 	validate := validator.New()
 
 	if err := validate.Struct(input); err != nil {
-		return CreateUserOutput{}, err
+		return i.presenter.Output(), err
 	}
 
 	userEmail, err := model.NewEmail(input.Email)
 
 	if err != nil {
-		return CreateUserOutput{}, err
+		return i.presenter.Output(), err
 	}
 
 	isExists, err := i.sqlRepository.Exists(userEmail) // ユーザが存在するか確認
 
 	if err != nil {
-		return CreateUserOutput{}, err
+		return i.presenter.Output(), err
 	}
 	if isExists {
-		return CreateUserOutput{}, errors.New("user already exists")
+		return i.presenter.Output(), errors.New("user already exists")
 	}
 
 	user := model.NewUser(model.NewUUID(""), userEmail, hashedPw, time.Now(), time.Now(), model.InConfirmation)
 
 	if err := i.sqlRepository.Create(user); err != nil {
-		return CreateUserOutput{}, err
+		return i.presenter.Output(), err
 	}
 
 	token, err := i.noSqlRepository.StartSession(userEmail)
 
 	if err != nil {
-		return CreateUserOutput{}, err
+		return i.presenter.Output(), err
 	}
 
 	mailSubject := "【メール確認のお願い】"
 	if err := email.SmtpSendMail([]string{input.Email}, mailSubject, "トークン:"+token); err != nil {
-		return CreateUserOutput{}, err
+		return i.presenter.Output(), err
 	}
 
-	return CreateUserOutput{}, nil
+	return i.presenter.Output(), nil
 }

@@ -1,7 +1,6 @@
 package user
 
 import (
-	"ideadeck/domain/model"
 	"ideadeck/usecase/user"
 )
 
@@ -11,6 +10,6 @@ func NewCreatePresenter() *CreatePresenter {
 	return &CreatePresenter{}
 }
 
-func (p *CreatePresenter) Output(account model.User) user.CreateUserOutput {
+func (p *CreatePresenter) Output() user.CreateUserOutput {
 	return user.CreateUserOutput{}
 }
