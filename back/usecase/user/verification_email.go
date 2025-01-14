@@ -18,10 +18,11 @@ type (
 	}
 
 	VerificationEmailPresenter interface {
-		Output() VerificationEmailOutput
+		Output(token string) VerificationEmailOutput
 	}
 
 	VerificationEmailOutput struct {
+		Token string `json:"token"`
 	}
 
 	verificationEmailInterator struct {
@@ -72,9 +73,11 @@ func (i verificationEmailInterator) Execute(input VerificationEmailInput) (Verif
 		return VerificationEmailOutput{}, err
 	}
 
-	if _, err := i.noSqlRepository.StartSession(userEmail); err != nil {
+	token, err := i.noSqlRepository.StartSession(userEmail)
+
+	if err != nil {
 		return VerificationEmailOutput{}, err
 	}
 
-	return VerificationEmailOutput{}, nil
+	return i.presenter.Output(token), nil
 }

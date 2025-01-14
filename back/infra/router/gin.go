@@ -122,7 +122,7 @@ func (e *GinEngine) verificationEmailAction() gin.HandlerFunc {
 			user_presenter.NewVerificationEmailPresenter(),
 		)
 
-		_, err := uc.Execute(user.VerificationEmailInput{
+		token, err := uc.Execute(user.VerificationEmailInput{
 			Token: c.DefaultQuery("token", ""),
 		})
 
@@ -135,7 +135,8 @@ func (e *GinEngine) verificationEmailAction() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"code": http.StatusOK,
+			"code":  http.StatusOK,
+			"token": token,
 		})
 	}
 }
