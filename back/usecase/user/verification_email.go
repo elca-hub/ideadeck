@@ -48,35 +48,35 @@ func (i verificationEmailInterator) Execute(input VerificationEmailInput) (Verif
 	validate := validator.New()
 
 	if err := validate.Struct(input); err != nil {
-		return VerificationEmailOutput{}, err
+		return i.presenter.Output(""), err
 	}
 
 	userEmail, err := i.noSqlRepository.GetSession(input.Token)
 
 	if err != nil {
-		return VerificationEmailOutput{}, errors.New("invalid token")
+		return i.presenter.Output(""), errors.New("invalid token")
 	}
 
 	userModel, err := i.sqlRepository.FindByEmail(userEmail)
 
 	if err != nil {
-		return VerificationEmailOutput{}, err
+		return i.presenter.Output(""), err
 	}
 
 	if userModel.EmailVerification() != model.InConfirmation {
-		return VerificationEmailOutput{}, errors.New("already confirmed")
+		return i.presenter.Output(""), errors.New("already confirmed")
 	}
 
 	userModel.UpdateEmailVerification(model.Confirmed)
 
 	if err := i.sqlRepository.Update(userModel); err != nil {
-		return VerificationEmailOutput{}, err
+		return i.presenter.Output(""), err
 	}
 
 	token, err := i.noSqlRepository.StartSession(userEmail)
 
 	if err != nil {
-		return VerificationEmailOutput{}, err
+		return i.presenter.Output(""), err
 	}
 
 	return i.presenter.Output(token), nil
