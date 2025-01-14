@@ -1,0 +1,57 @@
+services:
+  front:
+    build:
+      context: ./front
+    tty: true
+    volumes:
+      - ./front:/app
+    environment:
+      - WATCHPACK_POLLING=true
+    command: sh -c "npm run dev"
+    ports:
+      - "3000:3000"
+  back:
+    build:
+      context: ./back
+    tty: true
+    env_file:
+      - back/.env
+    depends_on:
+      - mysql
+      - redis
+      - mail
+    volumes:
+      - ./back:/ideadeck
+    ports:
+      - "5050:5050"
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ideadeck
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./mysql:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$MYSQL_ROOT_PASSWORD" ]
+      interval: 30s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+  mail:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    volumes:
+      - mail_data:/data
+  redis:
+    image: redis:7.4
+    ports:
+      - "6379:6379"
+
+volumes:
+  db_data:
+  mail_data:
