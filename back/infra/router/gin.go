@@ -77,6 +77,8 @@ func (e *GinEngine) setupRouter(router *gin.Engine) {
 	router.POST("/api/v1/user", e.createUserAction())
 
 	router.GET("/api/v1/verification/email", e.verificationEmailAction())
+
+	router.GET("/api/v1/user/", e.getUserInfoAction())
 }
 
 func (e *GinEngine) healthCheckAction() gin.HandlerFunc {
@@ -137,6 +139,33 @@ func (e *GinEngine) verificationEmailAction() gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{
 			"code":  http.StatusOK,
 			"token": token,
+		})
+	}
+}
+
+func (e *GinEngine) getUserInfoAction() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		uc := user.NewGetUserInfoInterator(
+			e.sql.UserRepository(),
+			e.noSQL.UserRepository(),
+			user_presenter.NewGetUserInfoPresenter(),
+		)
+
+		userOutput, err := uc.Execute(user.GetUserInfoInput{
+			Token: c.Request.Header.Get("token"),
+		})
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code": http.StatusInternalServerError,
+				"err":  err.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"code": http.StatusOK,
+			"user": userOutput,
 		})
 	}
 }
