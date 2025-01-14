@@ -8,9 +8,11 @@ type UUID struct {
 	id string
 }
 
-func NewUUID() UUID {
-	return UUID{
-		id: gouuid.NewV4().String(),
+func NewUUID(id string) UUID {
+	if id == "" {
+		return UUID{id: gouuid.NewV4().String()}
+	} else {
+		return UUID{id: id}
 	}
 }
 

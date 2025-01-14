@@ -75,6 +75,8 @@ func (e *GinEngine) setupRouter(router *gin.Engine) {
 	router.GET("/ping", e.healthCheckAction())
 
 	router.POST("/api/v1/user", e.createUserAction())
+
+	router.GET("/api/v1/verification/email", e.verificationEmailAction())
 }
 
 func (e *GinEngine) healthCheckAction() gin.HandlerFunc {
@@ -109,5 +111,31 @@ func (e *GinEngine) createUserAction() gin.HandlerFunc {
 		})
 
 		return
+	}
+}
+
+func (e *GinEngine) verificationEmailAction() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		uc := user.NewVerificationEmailInterator(
+			e.sql.UserRepository(),
+			e.noSQL.UserRepository(),
+			user_presenter.NewVerificationEmailPresenter(),
+		)
+
+		_, err := uc.Execute(user.VerificationEmailInput{
+			Token: c.DefaultQuery("token", ""),
+		})
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code": http.StatusInternalServerError,
+				"err":  err.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"code": http.StatusOK,
+		})
 	}
 }

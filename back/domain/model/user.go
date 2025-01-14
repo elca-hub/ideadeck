@@ -15,7 +15,6 @@ type User struct {
 	createdAt         time.Time
 	updatedAt         time.Time
 	emailVerification int
-	confirmedAt       time.Time
 }
 
 func NewUser(
@@ -25,7 +24,6 @@ func NewUser(
 	createdAt time.Time,
 	updatedAt time.Time,
 	emailVerification int,
-	confirmedAt time.Time,
 ) *User {
 	return &User{
 		id,
@@ -34,7 +32,6 @@ func NewUser(
 		createdAt,
 		updatedAt,
 		emailVerification,
-		confirmedAt,
 	}
 }
 
@@ -62,6 +59,6 @@ func (u *User) EmailVerification() int {
 	return u.emailVerification
 }
 
-func (u *User) ConfirmedAt() time.Time {
-	return u.confirmedAt
+func (u *User) UpdateEmailVerification(emailVerification int) {
+	u.emailVerification = emailVerification
 }

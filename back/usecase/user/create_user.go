@@ -72,24 +72,20 @@ func (i createUserInterator) Execute(input CreateUserInput) (CreateUserOutput, e
 		return CreateUserOutput{}, errors.New("user already exists")
 	}
 
-	user := model.NewUser(model.NewUUID(), userEmail, hashedPw, time.Now(), time.Now(), model.InConfirmation, time.Now())
+	user := model.NewUser(model.NewUUID(""), userEmail, hashedPw, time.Now(), time.Now(), model.InConfirmation)
 
 	if err := i.sqlRepository.Create(user); err != nil {
 		return CreateUserOutput{}, err
 	}
 
-	if err := i.noSqlRepository.StartSession(userEmail); err != nil {
-		return CreateUserOutput{}, err
-	}
-
-	createdToken, err := i.noSqlRepository.GetSession(userEmail) // sessionを取得
+	token, err := i.noSqlRepository.StartSession(userEmail)
 
 	if err != nil {
 		return CreateUserOutput{}, err
 	}
 
 	mailSubject := "【メール確認のお願い】"
-	if err := email.SmtpSendMail([]string{input.Email}, mailSubject, "トークン:"+createdToken); err != nil {
+	if err := email.SmtpSendMail([]string{input.Email}, mailSubject, "トークン:"+token); err != nil {
 		return CreateUserOutput{}, err
 	}
 
