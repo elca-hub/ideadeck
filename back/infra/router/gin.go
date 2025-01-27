@@ -83,7 +83,6 @@ func (e *GinEngine) setupRouter(router *gin.Engine) {
 
 func (e *GinEngine) healthCheckAction() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		fmt.Println("hey")
 		c.JSON(http.StatusOK, gin.H{
 			"code": http.StatusOK,
 		})
