@@ -1,7 +1,7 @@
 package user
 
 import (
-	user_model "ideadeck/domain/model"
+	usermodel "ideadeck/domain/model"
 	"ideadeck/usecase/user"
 )
 
@@ -11,7 +11,7 @@ func NewGetUserInfoPresenter() *GetUserInfoPresenter {
 	return &GetUserInfoPresenter{}
 }
 
-func (p *GetUserInfoPresenter) Output(model user_model.User, token string) user.GetUserInfoOutput {
+func (p *GetUserInfoPresenter) Output(model usermodel.User, token string) user.GetUserInfoOutput {
 	return user.GetUserInfoOutput{
 		Email: model.Email().Email(),
 		Token: token,
