@@ -76,9 +76,11 @@ func (e *GinEngine) setupRouter(router *gin.Engine) {
 
 	apiRouterGroup := router.Group("/api/v1")
 	{
+		apiRouterGroup.POST("/signup", e.createUserAction())
+		apiRouterGroup.POST("/login", e.loginAction())
+
 		userRouterGroup := apiRouterGroup.Group("/user")
 		{
-			userRouterGroup.POST("/", e.createUserAction())
 			userRouterGroup.GET("/", e.getUserInfoAction())
 		}
 		apiRouterGroup.GET("/verification/email", e.verificationEmailAction())
@@ -182,6 +184,36 @@ func (e *GinEngine) getUserInfoAction() gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{
 			"code":  http.StatusOK,
 			"email": userOutput.Email,
+		})
+	}
+}
+
+func (e *GinEngine) loginAction() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		uc := user.NewLoginUserInterator(
+			e.sql.UserRepository(),
+			e.noSQL.UserRepository(),
+			user_presenter.NewLoginUserPresenter(),
+		)
+
+		userOutput, err := uc.Execute(user.LoginUserInput{
+			Email:    c.PostForm("email"),
+			Password: c.PostForm("password"),
+		})
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code": http.StatusInternalServerError,
+				"err":  err.Error(),
+			})
+			return
+		}
+
+		c.SetCookie("token", userOutput.Token, 3600, "/", "localhost", false, true)
+
+		c.JSON(http.StatusOK, gin.H{
+			"code": http.StatusOK,
+			"user": userOutput,
 		})
 	}
 }
