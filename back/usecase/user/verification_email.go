@@ -2,7 +2,6 @@ package user
 
 import (
 	"errors"
-	"github.com/go-playground/validator/v10"
 	"ideadeck/domain/model"
 	"ideadeck/domain/repository/nosql"
 	"ideadeck/domain/repository/sql"
@@ -22,7 +21,7 @@ type (
 	}
 
 	VerificationEmailOutput struct {
-		Token string `json:"token"`
+		Token string
 	}
 
 	verificationEmailInterator struct {
@@ -45,12 +44,6 @@ func NewVerificationEmailInterator(
 }
 
 func (i verificationEmailInterator) Execute(input VerificationEmailInput) (VerificationEmailOutput, error) {
-	validate := validator.New()
-
-	if err := validate.Struct(input); err != nil {
-		return i.presenter.Output(""), err
-	}
-
 	userEmail, err := i.noSqlRepository.GetSession(input.Token)
 
 	if err != nil {
