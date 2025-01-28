@@ -11,8 +11,9 @@ func NewGetUserInfoPresenter() *GetUserInfoPresenter {
 	return &GetUserInfoPresenter{}
 }
 
-func (p *GetUserInfoPresenter) Output(model user_model.User) user.GetUserInfoOutput {
+func (p *GetUserInfoPresenter) Output(model user_model.User, token string) user.GetUserInfoOutput {
 	return user.GetUserInfoOutput{
 		Email: model.Email().Email(),
+		Token: token,
 	}
 }

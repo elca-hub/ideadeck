@@ -135,9 +135,10 @@ func (e *GinEngine) verificationEmailAction() gin.HandlerFunc {
 			return
 		}
 
+		c.SetCookie("token", token.Token, 3600, "/", "localhost", false, true)
+		
 		c.JSON(http.StatusOK, gin.H{
-			"code":  http.StatusOK,
-			"token": token,
+			"code": http.StatusOK,
 		})
 	}
 }
@@ -150,8 +151,18 @@ func (e *GinEngine) getUserInfoAction() gin.HandlerFunc {
 			user_presenter.NewGetUserInfoPresenter(),
 		)
 
+		cookie, err := c.Cookie("token")
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code": http.StatusInternalServerError,
+				"err":  err.Error(),
+			})
+			return
+		}
+
 		userOutput, err := uc.Execute(user.GetUserInfoInput{
-			Token: c.Request.Header.Get("token"),
+			Token: cookie,
 		})
 
 		if err != nil {
@@ -162,9 +173,11 @@ func (e *GinEngine) getUserInfoAction() gin.HandlerFunc {
 			return
 		}
 
+		c.SetCookie("token", userOutput.Token, 3600, "/", "localhost", false, true)
+
 		c.JSON(http.StatusOK, gin.H{
-			"code": http.StatusOK,
-			"user": userOutput,
+			"code":  http.StatusOK,
+			"email": userOutput.Email,
 		})
 	}
 }

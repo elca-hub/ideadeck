@@ -2,7 +2,6 @@ package user
 
 import (
 	"errors"
-	"github.com/go-playground/validator/v10"
 	"ideadeck/domain/model"
 	"ideadeck/domain/repository/nosql"
 	"ideadeck/domain/repository/sql"
@@ -18,11 +17,12 @@ type (
 	}
 
 	GetUserInfoPresenter interface {
-		Output(user model.User) GetUserInfoOutput
+		Output(user model.User, token string) GetUserInfoOutput
 	}
 
 	GetUserInfoOutput struct {
-		Email string `json:"email"`
+		Email string
+		Token string
 	}
 
 	getUserInfoInterator struct {
@@ -45,23 +45,22 @@ func NewGetUserInfoInterator(
 }
 
 func (i getUserInfoInterator) Execute(input GetUserInfoInput) (GetUserInfoOutput, error) {
-	validate := validator.New()
-
-	if err := validate.Struct(input); err != nil {
-		return i.presenter.Output(model.User{}), err
-	}
-
 	userEmail, err := i.noSqlRepository.GetSession(input.Token)
 
 	if err != nil {
-		return i.presenter.Output(model.User{}), errors.New("invalid token")
+		return i.presenter.Output(model.User{}, ""), errors.New("invalid token")
 	}
 
 	userModel, err := i.sqlRepository.FindByEmail(userEmail)
 
 	if err != nil {
-		return i.presenter.Output(model.User{}), err
+		return i.presenter.Output(model.User{}, ""), err
 	}
 
-	return i.presenter.Output(*userModel), nil
+	session, err := i.noSqlRepository.StartSession(userEmail)
+	if err != nil {
+		return i.presenter.Output(model.User{}, ""), err
+	}
+
+	return i.presenter.Output(*userModel, session), nil
 }

@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"fmt"
 	"github.com/go-playground/validator/v10"
 	"ideadeck/domain/model"
 	"ideadeck/domain/repository/nosql"
@@ -85,7 +86,10 @@ func (i createUserInterator) Execute(input CreateUserInput) (CreateUserOutput, e
 	}
 
 	mailSubject := "【メール確認のお願い】"
-	if err := email.SmtpSendMail([]string{input.Email}, mailSubject, "トークン:"+token); err != nil {
+
+	mailContent := fmt.Sprintf("以下のリンクをクリックしてメールアドレスを確認してください。\nhttp://localhost:8080/verification/email?token=%s", token)
+
+	if err := email.SmtpSendMail([]string{input.Email}, mailSubject, mailContent); err != nil {
 		return i.presenter.Output(), err
 	}
 
