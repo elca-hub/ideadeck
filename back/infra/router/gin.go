@@ -74,11 +74,15 @@ func (e *GinEngine) Listen() {
 func (e *GinEngine) setupRouter(router *gin.Engine) {
 	router.GET("/ping", e.healthCheckAction())
 
-	router.POST("/api/v1/user", e.createUserAction())
-
-	router.GET("/api/v1/verification/email", e.verificationEmailAction())
-
-	router.GET("/api/v1/user/", e.getUserInfoAction())
+	apiRouterGroup := router.Group("/api/v1")
+	{
+		userRouterGroup := apiRouterGroup.Group("/user")
+		{
+			userRouterGroup.POST("/", e.createUserAction())
+			userRouterGroup.GET("/", e.getUserInfoAction())
+		}
+		apiRouterGroup.GET("/verification/email", e.verificationEmailAction())
+	}
 }
 
 func (e *GinEngine) healthCheckAction() gin.HandlerFunc {
@@ -136,7 +140,7 @@ func (e *GinEngine) verificationEmailAction() gin.HandlerFunc {
 		}
 
 		c.SetCookie("token", token.Token, 3600, "/", "localhost", false, true)
-		
+
 		c.JSON(http.StatusOK, gin.H{
 			"code": http.StatusOK,
 		})
